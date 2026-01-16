@@ -79,7 +79,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.username = token.username as string
-        session.user.email = token.email as string || ''
+        session.user.email = (token.email as string) || ''
       }
       return session
     },

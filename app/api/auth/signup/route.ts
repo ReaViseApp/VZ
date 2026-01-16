@@ -17,7 +17,8 @@ function isEmail(input: string): boolean {
 }
 
 function isPhone(input: string): boolean {
-  // Simple phone validation (starts with + and has digits)
+  // Simple phone validation - accepts international formats starting with +
+  // For production, consider using a library like libphonenumber-js for comprehensive validation
   const phoneRegex = /^\+?[1-9]\d{1,14}$/
   return phoneRegex.test(input.replace(/[\s-]/g, ''))
 }

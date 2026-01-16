@@ -61,7 +61,7 @@ export default function Header() {
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
-                    {session.user.username?.[0]?.toUpperCase() || 'U'}
+                    {session.user.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || '?'}
                   </div>
                   <span>{session.user.username}</span>
                   <svg
