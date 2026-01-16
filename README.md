@@ -62,6 +62,26 @@ Before you begin, ensure you have the following installed:
 
 ## Database Setup
 
+### Installing PostgreSQL
+
+**macOS (using Homebrew):**
+```bash
+brew install postgresql@14
+brew services start postgresql@14
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+```
+
+**Windows:**
+Download and install from [PostgreSQL official website](https://www.postgresql.org/download/windows/)
+
+### Setting Up the Database
+
 1. **Create a PostgreSQL database**
    ```bash
    createdb viz_db
@@ -69,23 +89,73 @@ Before you begin, ensure you have the following installed:
    
    Or using psql:
    ```sql
+   psql -U postgres
    CREATE DATABASE viz_db;
+   \q
    ```
 
-2. **Generate Prisma Client**
+2. **Update your `.env` file** with the correct database credentials:
+   ```env
+   DATABASE_URL="postgresql://postgres:your_password@localhost:5432/viz_db?schema=public"
+   ```
+
+3. **Generate Prisma Client**
    ```bash
    npx prisma generate
    ```
 
-3. **Run database migrations**
+4. **Run database migrations**
    ```bash
    npx prisma migrate dev --name init
    ```
+   
+   This will:
+   - Create all necessary tables (User, Content, Editorial, VizList, ApprovalRequest, etc.)
+   - Set up NextAuth tables (Account, Session, VerificationToken)
+   - Apply indexes for optimal query performance
 
-4. **Optional: Open Prisma Studio to view your database**
+5. **Optional: View your database with Prisma Studio**
    ```bash
    npx prisma studio
    ```
+   
+   This opens a visual database browser at [http://localhost:5555](http://localhost:5555)
+
+### Troubleshooting Database Connection
+
+If you encounter database connection errors:
+
+1. **Check if PostgreSQL is running:**
+   ```bash
+   # macOS/Linux
+   pg_isready
+   
+   # Or check the service status
+   sudo systemctl status postgresql  # Linux
+   brew services list  # macOS
+   ```
+
+2. **Verify database exists:**
+   ```bash
+   psql -U postgres -l
+   ```
+
+3. **Test connection:**
+   ```bash
+   psql -U postgres -d viz_db
+   ```
+
+4. **Check your DATABASE_URL format:**
+   - Format: `postgresql://[user]:[password]@[host]:[port]/[database]?schema=public`
+   - Default PostgreSQL port: 5432
+   - Common users: `postgres` (default superuser)
+
+5. **Reset database if needed:**
+   ```bash
+   npx prisma migrate reset
+   ```
+   
+   ⚠️ This will delete all data and recreate the database schema.
 
 ## Running the Application
 
@@ -167,13 +237,59 @@ For detailed schema information, see `prisma/schema.prisma`.
 
 ## Features
 
-### Current Implementation (Foundation)
+### Authentication System
+
+#### User Registration
+- ✅ Create account with email or phone number
+- ✅ Username must be unique (minimum 3 characters)
+- ✅ Password must be at least 8 characters
+- ✅ Passwords securely hashed with bcrypt (10 rounds)
+- ✅ Server-side validation and duplicate checking
+- ✅ Client-side form validation with React Hook Form + Zod
+
+#### User Login
+- ✅ Login with email or phone + password
+- ✅ JWT-based sessions (30-day expiry)
+- ✅ Secure httpOnly cookies
+- ✅ Session persists across page refreshes
+- ✅ "Remember Me" functionality through JWT strategy
+
+#### Session Management
+- ✅ NextAuth.js integration throughout the app
+- ✅ Protected routes require authentication
+- ✅ Session data accessible in all components
+- ✅ Automatic session refresh
+- ✅ User menu with avatar in header
+- ✅ Logout functionality
+
+#### Protected Routes
+The following routes require authentication:
+- `/content/upload` - Upload new content
+- `/content/create-quotable` - Create quotable regions
+- `/editorial/create` - Create new editorial
+- `/saved` - View Viz.List (saved content)
+- `/approvals` - Manage approval requests
+
+Unauthenticated users are redirected to `/auth/login`.
+
+#### Security Features
+- ✅ Password hashing with bcrypt (10+ rounds)
+- ✅ No plain text passwords stored
+- ✅ JWT token encryption with NEXTAUTH_SECRET
+- ✅ Input sanitization and validation
+- ✅ SQL injection protection via Prisma ORM
+- ✅ Secure session cookies (httpOnly)
+
+### Current Implementation
 
 - ✅ Next.js 14 with App Router
 - ✅ TypeScript with strict mode
 - ✅ Tailwind CSS for styling
 - ✅ Responsive layout (Header + Sidebar)
-- ✅ Authentication UI (Sign Up / Log In pages)
+- ✅ **Full authentication system**
+- ✅ **User registration and login**
+- ✅ **Session management**
+- ✅ **Protected routes with middleware**
 - ✅ User profile page structure
 - ✅ PostgreSQL database with Prisma ORM
 - ✅ Database schema for all core models
@@ -181,7 +297,8 @@ For detailed schema information, see `prisma/schema.prisma`.
 
 ### Coming Soon (Future PRs)
 
-- 🔄 Full authentication implementation
+- 🔄 Email/phone verification system
+- 🔄 Password reset functionality
 - 🔄 Content creation with file upload
 - 🔄 Lasso selector for quotable regions
 - 🔄 Canvas editor for editorials
@@ -199,6 +316,69 @@ For detailed schema information, see `prisma/schema.prisma`.
 
 ## Development Guidelines
 
+### Authentication Patterns
+
+**Accessing Current User in Components:**
+```typescript
+'use client'
+import { useSession } from 'next-auth/react'
+
+export default function MyComponent() {
+  const { data: session, status } = useSession()
+  
+  if (status === 'loading') return <div>Loading...</div>
+  if (!session) return <div>Please log in</div>
+  
+  return <div>Hello {session.user.username}!</div>
+}
+```
+
+**Accessing Current User in API Routes:**
+```typescript
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Use session.user.id, session.user.email, etc.
+}
+```
+
+**Accessing Current User in Server Components:**
+```typescript
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+
+export default async function MyPage() {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    redirect('/auth/login')
+  }
+  
+  return <div>Hello {session.user.username}!</div>
+}
+```
+
+**Protecting Routes with Middleware:**
+
+Add routes to the `matcher` array in `middleware.ts`:
+```typescript
+export const config = {
+  matcher: [
+    '/your-protected-route',
+    '/another-protected-route',
+  ],
+}
+```
+
+### General Development Guidelines
+
 - Use TypeScript strict mode
 - Follow Next.js 14 App Router best practices
 - Use server components where appropriate
@@ -207,6 +387,23 @@ For detailed schema information, see `prisma/schema.prisma`.
 - Write clean, readable, and maintainable code
 
 ## Troubleshooting
+
+### Authentication Issues
+
+**Session not persisting:**
+1. Check that `NEXTAUTH_SECRET` is set in `.env`
+2. Clear browser cookies and try again
+3. Verify `NEXTAUTH_URL` matches your development URL
+
+**"Unauthorized" errors in API routes:**
+1. Ensure you're passing `authOptions` to `getServerSession(authOptions)`
+2. Check that the user is logged in
+3. Verify the session contains user data
+
+**Cannot access protected routes:**
+1. Log in first at `/auth/login`
+2. Check middleware configuration in `middleware.ts`
+3. Verify the route is in the `matcher` array
 
 ### Database Connection Issues
 

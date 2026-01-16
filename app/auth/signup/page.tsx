@@ -41,12 +41,25 @@ export default function SignUpPage() {
     setError(null)
 
     try {
-      // TODO: Implement actual signup logic
-      console.log('Sign up data:', data)
-      
-      // Placeholder: Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emailOrPhone: data.emailOrPhone,
+          username: data.username,
+          password: data.password,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'An error occurred during sign up.')
+        return
+      }
+
       // Redirect to login page after successful signup
       router.push('/auth/login?registered=true')
     } catch (err) {
