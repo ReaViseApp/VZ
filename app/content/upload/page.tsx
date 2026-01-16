@@ -157,12 +157,16 @@ export default function ContentUploadPage() {
       return
     }
     
-    sessionStorage.setItem('uploadedMedia', JSON.stringify(mediaFiles.map((m) => ({
+    const mediaData = mediaFiles.map((m) => ({
       id: m.id,
-      preview: m.preview,
       type: m.type,
       crop: m.crop,
-    }))))
+    }))
+    sessionStorage.setItem('uploadedMedia', JSON.stringify(mediaData))
+    
+    mediaFiles.forEach(m => {
+      sessionStorage.setItem(`media-blob-${m.id}`, m.preview)
+    })
     
     router.push('/content/create-quotable')
   }

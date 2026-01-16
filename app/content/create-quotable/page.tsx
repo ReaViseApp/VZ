@@ -41,7 +41,12 @@ export default function CreateQuotablePage() {
   useEffect(() => {
     const storedMedia = sessionStorage.getItem('uploadedMedia')
     if (storedMedia) {
-      setMediaFiles(JSON.parse(storedMedia))
+      const mediaData = JSON.parse(storedMedia)
+      const reconstructedMedia = mediaData.map((m: any) => ({
+        ...m,
+        preview: sessionStorage.getItem(`media-blob-${m.id}`) || ''
+      }))
+      setMediaFiles(reconstructedMedia.filter((m: any) => m.preview))
     } else {
       router.push('/content/upload')
     }
@@ -188,8 +193,7 @@ export default function CreateQuotablePage() {
     setIsSubmitting(true)
 
     try {
-      // Upload media files and create content
-      for (const media of mediaFiles) {
+      const uploadPromises = mediaFiles.map(async (media) => {
         const response = await fetch(media.preview)
         const blob = await response.blob()
         
@@ -226,8 +230,8 @@ export default function CreateQuotablePage() {
 
         const content = await contentRes.json()
 
-        for (const region of mediaRegions) {
-          await fetch('/api/viz-list/add', {
+        await Promise.all(mediaRegions.map(region =>
+          fetch('/api/viz-list/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -235,8 +239,12 @@ export default function CreateQuotablePage() {
               quotableRegionId: region.id,
             }),
           })
-        }
-      }
+        ))
+
+        return content
+      })
+
+      await Promise.all(uploadPromises)
 
       sessionStorage.removeItem('uploadedMedia')
       router.push('/saved')

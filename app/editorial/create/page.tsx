@@ -47,10 +47,19 @@ export default function EditorialCreatePage() {
   useEffect(() => {
     const loadFabric = async () => {
       if (step === 2 && canvasRef.current && !canvas) {
-        const { Canvas, IText, Rect, Circle, Triangle, Line, Text, Image } = await import('fabric')
-        fabricRef.current = { Canvas, IText, Rect, Circle, Triangle, Line, Text, Image }
+        const fabric = await import('fabric')
+        fabricRef.current = {
+          Canvas: fabric.Canvas,
+          IText: fabric.IText,
+          Rect: fabric.Rect,
+          Circle: fabric.Circle,
+          Triangle: fabric.Triangle,
+          Line: fabric.Line,
+          Text: fabric.Text,
+          Image: fabric.Image
+        }
         
-        const fabricCanvas = new Canvas(canvasRef.current, {
+        const fabricCanvas = new fabric.Canvas(canvasRef.current, {
           width: 800,
           height: 800,
           backgroundColor: '#ffffff',
