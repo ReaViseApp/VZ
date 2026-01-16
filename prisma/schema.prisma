@@ -60,7 +60,9 @@ enum ContentType {
 model Editorial {
   id          String    @id @default(uuid())
   userId      String
+  title       String    // Editorial title (required)
   pages       Json      // Array of canvas page objects
+  isDraft     Boolean   @default(true)
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -70,6 +72,7 @@ model Editorial {
 
   @@index([userId])
   @@index([publishedAt])
+  @@index([isDraft])
 }
 
 model VizList {
