@@ -1,0 +1,9 @@
+<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Shopping bag shape -->
+  <path d="M 16 24 L 12 52 C 12 54 13 56 15 56 L 49 56 C 51 56 52 54 52 52 L 48 24 Z" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Bag handle -->
+  <path d="M 24 24 L 24 18 C 24 13 27 10 32 10 C 37 10 40 13 40 18 L 40 24" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  <!-- Price tag -->
+  <circle cx="44" cy="18" r="8" fill="#1a1a1a"/>
+  <text x="44" y="22" font-size="10" fill="white" text-anchor="middle" font-weight="bold">$</text>
+</svg>
