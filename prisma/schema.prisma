@@ -38,6 +38,12 @@ model User {
   // NextAuth relations
   accounts Account[]
   sessions Session[]
+  
+  // Viz.Let relations
+  vizLetShop        VizLetShop?
+  buyerOrders       VizLetOrder[]     @relation("BuyerOrders")
+  shippingAddresses ShippingAddress[]
+  paymentMethods    PaymentMethod[]
 
   @@index([username])
   @@index([email])
@@ -110,6 +116,7 @@ model Content {
   vizLists         VizList[]
   approvalRequests ApprovalRequest[]
   flags            ContentFlag[]
+  vizLetProducts   VizLetProduct[]
 
   @@index([userId])
   @@index([type])
@@ -274,4 +281,126 @@ enum FlagStatus {
   APPROVED
   REJECTED
   REMOVED
+}
+
+// Viz.Let E-commerce Models
+
+model VizLetShop {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  vizBizId        String    @unique // 16-digit unique ID
+  shopName        String    // Can be different from username
+  description     String?
+  isActive        Boolean   @default(true)
+  trialEndsAt     DateTime  // 1 year from creation for new users
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products        VizLetProduct[]
+  
+  @@index([userId])
+  @@index([vizBizId])
+  @@index([isActive])
+}
+
+model VizLetProduct {
+  id                    String    @id @default(uuid())
+  shopId                String
+  contentId             String    // References the quotable content
+  quotableRegionId      String?   // Specific quotable region used
+  productName           String
+  productDescription    String
+  productPhotos         String[]  // Array of photo URLs (minimum 5)
+  price                 Float
+  acceptedPaymentMethods String[] // Array of payment methods
+  deliveryTime          String
+  deliveryMethods       String[]
+  customizationGuidelines String?
+  giftWrappingGuidelines String?
+  isActive              Boolean   @default(true)
+  viewCount             Int       @default(0)
+  purchaseCount         Int       @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  shop                  VizLetShop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  content               Content    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  orders                VizLetOrder[]
+  
+  @@index([shopId])
+  @@index([contentId])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model VizLetOrder {
+  id                String      @id @default(uuid())
+  buyerId           String
+  productId         String
+  quantity          Int         @default(1)
+  totalAmount       Float
+  status            OrderStatus @default(PENDING)
+  shippingAddressId String
+  paymentMethodId   String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  buyer             User        @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Cascade)
+  product           VizLetProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shippingAddress   ShippingAddress @relation(fields: [shippingAddressId], references: [id])
+  paymentMethod     PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  
+  @@index([buyerId])
+  @@index([productId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model ShippingAddress {
+  id          String   @id @default(uuid())
+  userId      String
+  fullName    String
+  address1    String
+  address2    String?
+  city        String
+  state       String
+  postalCode  String
+  country     String
+  phone       String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      VizLetOrder[]
+  
+  @@index([userId])
+}
+
+model PaymentMethod {
+  id              String   @id @default(uuid())
+  userId          String
+  type            String   // "credit_card", "debit_card", "paypal", etc.
+  lastFourDigits  String?
+  expiryMonth     Int?
+  expiryYear      Int?
+  cardholderName  String?
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders          VizLetOrder[]
+  
+  @@index([userId])
 }
