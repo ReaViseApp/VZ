@@ -290,10 +290,101 @@ Unauthenticated users are redirected to `/auth/login`.
 - ✅ **User registration and login**
 - ✅ **Session management**
 - ✅ **Protected routes with middleware**
+- ✅ **Admin panel with role-based access**
 - ✅ User profile page structure
 - ✅ PostgreSQL database with Prisma ORM
 - ✅ Database schema for all core models
 - ✅ NextAuth.js configuration
+
+## Admin Panel
+
+Viz. includes a comprehensive admin panel for managing users, content, and site settings. The admin panel is accessible only to users with the `ADMIN` role.
+
+### Default Admin Credentials
+
+A default admin account is created when you run the database seed:
+
+```bash
+npx prisma db seed
+```
+
+**Login Credentials:**
+- **Email**: `admin@viz.app`
+- **Username**: `vizadmin`
+- **Password**: `AdminViz2026!`
+- **Role**: `ADMIN`
+
+⚠️ **IMPORTANT**: Change the password immediately after first login!
+
+### Accessing the Admin Panel
+
+1. Log in at `/auth/login` with the admin credentials
+2. Once logged in, click your username in the header
+3. Select "🛡️ Admin Panel" from the dropdown menu
+4. Or navigate directly to `/admin`
+
+### Admin Features
+
+#### Dashboard (`/admin`)
+- Overview statistics (total users, content, editorials)
+- Recent user activity
+- Recent content uploads
+- Top content creators
+- System health metrics
+
+#### User Management (`/admin/users`)
+- Search and filter users by role, status, verification
+- Change user roles (User, Moderator, Admin)
+- Ban or suspend users
+- View user statistics (content count, join date)
+- Sortable and paginated user table
+
+#### Content Management (`/admin/content`)
+- Browse all user-generated content
+- Filter by type (photo/video), status, featured status
+- Approve or reject content (when approval is required)
+- Feature/unfeature content for homepage
+- View engagement metrics (saves, flags)
+
+#### Site Settings (`/admin/settings`)
+- Configure site identity (name, description)
+- SEO settings (meta title, description, keywords)
+- Theme colors (primary, secondary, accent, font)
+- Feature toggles (comments, likes, sharing, approval)
+- Real-time settings updates
+
+#### Activity Logs (`/admin/logs`)
+- Comprehensive audit trail of all admin actions
+- Filter by action type, target type, admin user
+- Detailed log entries with timestamps
+- IP address tracking
+- JSON details for each action
+
+#### Design Customization (`/admin/design`)
+- Theme color management (basic implementation)
+- Logo and branding (coming soon)
+- Typography options (coming soon)
+- Layout customization (coming soon)
+
+#### Analytics (`/admin/analytics`)
+- Redirects to main dashboard
+- Advanced analytics coming soon
+
+### User Roles
+
+- **USER**: Regular users with standard access
+- **MODERATOR**: Can suspend users and moderate content (partial implementation)
+- **ADMIN**: Full access to admin panel and all features
+
+### Admin Security Features
+
+- ✅ Role-based access control (RBAC)
+- ✅ Protected `/admin/*` routes via middleware
+- ✅ Session-based authentication checks
+- ✅ Activity logging for accountability
+- ✅ Ban and suspension checks on login
+- ✅ Confirmation modals for destructive actions
+- ✅ IP address tracking in logs
 
 ### Coming Soon (Future PRs)
 
