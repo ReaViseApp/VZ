@@ -36,6 +36,24 @@ export const authOptions: NextAuthOptions = {
           throw new Error('No user found with this email or phone number')
         }
 
+        // Check if user is banned
+        if (user.isBanned) {
+          throw new Error('This account has been banned')
+        }
+
+        // Check if user is suspended
+        if (user.isSuspended) {
+          if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+            throw new Error(`This account is suspended until ${user.suspendedUntil.toLocaleDateString()}`)
+          } else if (user.isSuspended && user.suspendedUntil && user.suspendedUntil <= new Date()) {
+            // Auto-unsuspend if suspension period has ended
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { isSuspended: false, suspendedUntil: null }
+            })
+          }
+        }
+
         // Verify password
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
@@ -52,6 +70,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.username,
           username: user.username,
+          role: user.role,
         }
       },
     }),
@@ -71,6 +90,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.username = user.username
         token.email = user.email || ''
+        token.role = user.role
       }
       return token
     },
@@ -80,6 +100,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.username = token.username as string
         session.user.email = (token.email as string) || ''
+        session.user.role = token.role as 'USER' | 'MODERATOR' | 'ADMIN'
       }
       return session
     },

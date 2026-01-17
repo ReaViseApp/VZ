@@ -11,15 +11,19 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  username      String   @unique
-  email         String?  @unique
-  phone         String?  @unique
-  password      String
-  emailVerified Boolean  @default(false)
-  phoneVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String    @id @default(uuid())
+  username       String    @unique
+  email          String?   @unique
+  phone          String?   @unique
+  password       String
+  role           UserRole  @default(USER)
+  isBanned       Boolean   @default(false)
+  isSuspended    Boolean   @default(false)
+  suspendedUntil DateTime?
+  emailVerified  Boolean   @default(false)
+  phoneVerified  Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   // Relations
   contents          Content[]
@@ -27,6 +31,9 @@ model User {
   vizLists          VizList[]
   approvalRequests  ApprovalRequest[] @relation("RequesterApprovals")
   creatorApprovals  ApprovalRequest[] @relation("CreatorApprovals")
+  flagsReported     ContentFlag[]     @relation("FlagReporter")
+  flagsReviewed     ContentFlag[]     @relation("FlagReviewer")
+  adminActivityLogs AdminActivityLog[]
   
   // NextAuth relations
   accounts Account[]
@@ -35,6 +42,13 @@ model User {
   @@index([username])
   @@index([email])
   @@index([phone])
+  @@index([role])
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
 }
 
 // NextAuth models for database session support (optional but recommended)
@@ -78,24 +92,30 @@ model VerificationToken {
 }
 
 model Content {
-  id              String   @id @default(uuid())
+  id              String      @id @default(uuid())
   userId          String
   type            ContentType
   mediaUrl        String
   caption         String?
   hashtags        String[]
-  quotableRegions Json?    // Array of quotable region objects with coordinates and approval type
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  quotableRegions Json?       // Array of quotable region objects with coordinates and approval type
+  isFeatured      Boolean     @default(false)
+  featuredAt      DateTime?
+  isApproved      Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   // Relations
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  vizLists        VizList[]
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vizLists         VizList[]
   approvalRequests ApprovalRequest[]
+  flags            ContentFlag[]
 
   @@index([userId])
   @@index([type])
   @@index([createdAt])
+  @@index([isFeatured])
+  @@index([isApproved])
 }
 
 enum ContentType {
@@ -110,15 +130,21 @@ model Editorial {
   pages       Json      // Array of canvas page objects
   isDraft     Boolean   @default(true)
   publishedAt DateTime?
+  isFeatured  Boolean   @default(false)
+  featuredAt  DateTime?
+  isApproved  Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flags ContentFlag[]
 
   @@index([userId])
   @@index([publishedAt])
   @@index([isDraft])
+  @@index([isFeatured])
+  @@index([isApproved])
 }
 
 model VizList {
@@ -162,4 +188,90 @@ enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model SiteSettings {
+  id                String   @id @default(uuid())
+  // Site Identity
+  siteName          String   @default("Viz.")
+  siteDescription   String?
+  seoTitle          String?
+  seoDescription    String?
+  seoKeywords       String[]
+  
+  // Design Settings
+  primaryColor      String   @default("#1a1a1a")
+  secondaryColor    String   @default("#f5f5f5")
+  accentColor       String   @default("#007bff")
+  fontColor         String   @default("#000000")
+  fontFamily        String   @default("system")
+  fontSize          String   @default("base")
+  
+  // Layout Settings
+  sidebarPosition   String   @default("left")   // left, right, hidden
+  headerStyle       String   @default("default") // default, minimal, full
+  vizListLayout     String   @default("grid")    // grid, list, masonry
+  profileLayout     String   @default("tabs")    // tabs, single-column
+  feedLayout        String   @default("cards")   // cards, list, magazine
+  
+  // Feature Toggles
+  enableComments    Boolean  @default(true)
+  enableLikes       Boolean  @default(true)
+  enableSharing     Boolean  @default(true)
+  requireApproval   Boolean  @default(false)
+  
+  // Customization
+  logoUrl           String?
+  faviconUrl        String?
+  
+  updatedAt         DateTime @updatedAt
+  updatedBy         String?  // User ID who made the change
+  
+  @@map("site_settings")
+}
+
+model AdminActivityLog {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     String   // "USER_BANNED", "CONTENT_APPROVED", "SETTINGS_UPDATED", etc.
+  targetType String?  // "USER", "CONTENT", "EDITORIAL", "SETTINGS"
+  targetId   String?
+  details    Json?    // Additional metadata
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  
+  @@map("admin_activity_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model ContentFlag {
+  id          String      @id @default(uuid())
+  contentId   String?
+  content     Content?    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  editorialId String?
+  editorial   Editorial?  @relation(fields: [editorialId], references: [id], onDelete: Cascade)
+  reportedBy  String
+  reporter    User        @relation("FlagReporter", fields: [reportedBy], references: [id], onDelete: Cascade)
+  reason      String
+  status      FlagStatus  @default(PENDING)
+  reviewedBy  String?
+  reviewer    User?       @relation("FlagReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  reviewedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  
+  @@map("content_flags")
+  @@index([contentId])
+  @@index([editorialId])
+  @@index([reportedBy])
+  @@index([status])
+}
+
+enum FlagStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REMOVED
 }

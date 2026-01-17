@@ -1,13 +1,29 @@
 import { withAuth } from 'next-auth/middleware'
+import { NextResponse } from 'next/server'
 
-export default withAuth({
-  callbacks: {
-    authorized: ({ token }) => !!token,
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token
+    const path = req.nextUrl.pathname
+
+    // Protect admin routes - require ADMIN role
+    if (path.startsWith('/admin')) {
+      if (!token || token.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/auth/login?error=AdminOnly', req.url))
+      }
+    }
+
+    return NextResponse.next()
   },
-  pages: {
-    signIn: '/auth/login',
-  },
-})
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: '/auth/login',
+    },
+  }
+)
 
 export const config = {
   matcher: [
@@ -16,5 +32,6 @@ export const config = {
     '/editorial/create',
     '/saved',
     '/approvals',
+    '/admin/:path*',
   ],
 }
