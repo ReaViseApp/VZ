@@ -98,6 +98,18 @@ export default function Header() {
                     >
                       Approvals
                     </Link>
+                    {session.user.role === 'ADMIN' && (
+                      <>
+                        <hr className="my-1" />
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-2 text-sm text-purple-700 font-medium hover:bg-purple-50"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          🛡️ Admin Panel
+                        </Link>
+                      </>
+                    )}
                     <hr className="my-1" />
                     <button
                       onClick={handleSignOut}
