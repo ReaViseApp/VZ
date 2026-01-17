@@ -5,7 +5,7 @@ export interface VizLetShop {
   userId: string
   vizBizId: string
   shopName: string
-  description?: string
+  description?: string | null
   isActive: boolean
   trialEndsAt: Date
   createdAt: Date
@@ -16,7 +16,7 @@ export interface VizLetProduct {
   id: string
   shopId: string
   contentId: string
-  quotableRegionId?: string
+  quotableRegionId?: string | null
   productName: string
   productDescription: string
   productPhotos: string[]
@@ -24,18 +24,18 @@ export interface VizLetProduct {
   acceptedPaymentMethods: string[]
   deliveryTime: string
   deliveryMethods: string[]
-  customizationGuidelines?: string
-  giftWrappingGuidelines?: string
+  customizationGuidelines?: string | null
+  giftWrappingGuidelines?: string | null
   isActive: boolean
   viewCount: number
   purchaseCount: number
   createdAt: Date
   updatedAt: Date
-  shop?: VizLetShop
+  shop?: Partial<VizLetShop> & { id: string; shopName: string; vizBizId: string }
   content?: {
     id: string
     mediaUrl: string
-    caption?: string
+    caption?: string | null
   }
 }
 
