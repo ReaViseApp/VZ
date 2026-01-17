@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma/client'
 
+const MIN_VIZ_BIZ_ID = 1000000000000000
+const MAX_VIZ_BIZ_ID = 9999999999999999
+const MAX_GENERATION_ATTEMPTS = 10
+
 /**
  * Generate a unique 16-digit Viz.Biz ID for a shop
  * @returns {Promise<string>} A unique 16-digit numeric ID
@@ -8,14 +12,10 @@ export async function generateVizBizId(): Promise<string> {
   let vizBizId: string
   let isUnique = false
   let attempts = 0
-  const maxAttempts = 10
 
-  while (!isUnique && attempts < maxAttempts) {
+  while (!isUnique && attempts < MAX_GENERATION_ATTEMPTS) {
     // Generate a 16-digit random number
-    // To ensure it's 16 digits, we generate a number between 1000000000000000 and 9999999999999999
-    const min = 1000000000000000
-    const max = 9999999999999999
-    const randomNum = Math.floor(Math.random() * (max - min + 1)) + min
+    const randomNum = Math.floor(Math.random() * (MAX_VIZ_BIZ_ID - MIN_VIZ_BIZ_ID + 1)) + MIN_VIZ_BIZ_ID
     vizBizId = randomNum.toString()
 
     // Check if this ID already exists

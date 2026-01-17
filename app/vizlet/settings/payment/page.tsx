@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import type { PaymentMethod } from '@/types/vizlet'
+import { getCurrentYear } from '@/lib/utils/date'
+
+const CURRENT_YEAR = getCurrentYear()
 
 export default function PaymentSettingsPage() {
   const router = useRouter()
@@ -180,7 +183,7 @@ export default function PaymentSettingsPage() {
                       <input
                         type="number"
                         required
-                        min={new Date().getFullYear()}
+                        min={CURRENT_YEAR}
                         value={formData.expiryYear}
                         onChange={(e) => setFormData({ ...formData, expiryYear: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900"

@@ -121,9 +121,8 @@ export default function ProductCreationForm({ contentId, onSuccess }: ProductCre
     setIsLoading(true)
 
     try {
-      // Upload photos first
-      const photoUrls: string[] = []
-      for (const file of photoFiles) {
+      // Upload photos in parallel for better performance
+      const uploadPromises = photoFiles.map(async (file) => {
         const uploadFormData = new FormData()
         uploadFormData.append('file', file)
 
@@ -137,8 +136,10 @@ export default function ProductCreationForm({ contentId, onSuccess }: ProductCre
         }
 
         const { url } = await uploadRes.json()
-        photoUrls.push(url)
-      }
+        return url
+      })
+
+      const photoUrls = await Promise.all(uploadPromises)
 
       // Create product
       const res = await fetch('/api/vizlet/products/create', {

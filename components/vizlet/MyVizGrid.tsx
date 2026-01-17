@@ -6,6 +6,8 @@ import VizLetOptionModal from './VizLetOptionModal'
 import { useRouter } from 'next/navigation'
 import type { Content } from '@prisma/client'
 
+import { formatDate } from '@/lib/utils/date'
+
 interface MyVizGridProps {
   contents: Content[]
 }
@@ -95,7 +97,7 @@ export default function MyVizGrid({ contents }: MyVizGridProps) {
 
             {/* Date Badge */}
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-              {new Date(content.createdAt).toLocaleDateString()}
+              {formatDate(content.createdAt)}
             </div>
           </div>
         ))}

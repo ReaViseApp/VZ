@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 
+const PRODUCT_COUNT_WEIGHT = 0.4
+const PURCHASE_COUNT_WEIGHT = 0.6
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -55,8 +58,8 @@ export async function GET(request: NextRequest) {
         const totalPurchases = purchaseStats._sum.purchaseCount || 0
         const productCount = shop._count.products
 
-        // Popularity score: products * 0.4 + purchases * 0.6
-        const popularityScore = productCount * 0.4 + totalPurchases * 0.6
+        // Popularity score calculation
+        const popularityScore = productCount * PRODUCT_COUNT_WEIGHT + totalPurchases * PURCHASE_COUNT_WEIGHT
 
         return {
           ...shop,

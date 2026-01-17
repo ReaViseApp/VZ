@@ -41,11 +41,13 @@ export async function GET(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    // Increment view count (fire and forget - don't wait for it)
+    // Increment view count asynchronously with proper error handling
     prisma.vizLetProduct.update({
       where: { id },
       data: { viewCount: { increment: 1 } },
-    }).catch(err => console.error('Failed to increment view count:', err))
+    }).catch(err => {
+      console.error('Failed to increment view count for product', id, ':', err)
+    })
 
     return NextResponse.json({ product }, { status: 200 })
   } catch (error) {
