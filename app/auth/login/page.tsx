@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { signIn } from 'next-auth/react'
 import MainLayout from '@/components/MainLayout'
 
 const loginSchema = z.object({
@@ -38,16 +39,24 @@ function LoginForm() {
     setError(null)
 
     try {
-      // TODO: Implement actual login logic
-      console.log('Login data:', data)
-      
-      // Placeholder: Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      // Redirect to home page after successful login
-      router.push('/')
+      const result = await signIn('credentials', {
+        emailOrPhone: data.emailOrPhone,
+        password: data.password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Invalid credentials. Please try again.')
+        return
+      }
+
+      if (result?.ok) {
+        // Redirect to home page after successful login
+        router.push('/')
+        router.refresh()
+      }
     } catch (err) {
-      setError('Invalid credentials. Please try again.')
+      setError('An error occurred during login. Please try again.')
       console.error(err)
     } finally {
       setIsLoading(false)
