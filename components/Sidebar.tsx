@@ -23,6 +23,12 @@ const navigationItems = [
     icon: '/images/vizlist-icon.svg',
     description: 'Saved content',
   },
+  {
+    name: 'Viz.Let',
+    href: '/vizlet',
+    icon: '/images/vizlet-icon.svg',
+    description: 'E-commerce marketplace',
+  },
 ]
 
 export default function Sidebar() {
