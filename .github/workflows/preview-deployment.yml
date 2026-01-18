@@ -14,8 +14,11 @@ jobs:
     
     # Required secrets configuration:
     # - VERCEL_TOKEN: Vercel API token (get from https://vercel.com/account/tokens)
-    # - VERCEL_ORG_ID: Vercel organization/team ID (get from project settings)
-    # - VERCEL_PROJECT_ID: Vercel project ID (get from project settings)
+    # - VERCEL_ORG_ID: Vercel organization/team ID (get from project settings or .vercel/project.json)
+    # - VERCEL_PROJECT_ID: Vercel project ID (get from project settings or .vercel/project.json)
+    # 
+    # Note: The 'scope' parameter uses VERCEL_ORG_ID. This can be either the org ID or slug,
+    # but using the ID is more robust as it's less likely to change.
     
     steps:
       - name: Checkout code
