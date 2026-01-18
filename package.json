@@ -11,7 +11,12 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
+    "setup:neon": "bash scripts/deploy/setup-neon.sh",
+    "migrate:deploy": "bash scripts/deploy/migrate.sh",
+    "db:seed:production": "bash scripts/deploy/seed-production.sh",
+    "verify:deployment": "bash scripts/deploy/verify-deployment.sh",
+    "deploy:prepare": "npm run verify:deployment && npm run build"
   },
   "keywords": [
     "nextjs",
@@ -26,6 +31,8 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@hookform/resolvers": "^5.2.2",
+    "@neondatabase/serverless": "^0.9.0",
+    "@prisma/adapter-neon": "^5.9.0",
     "@prisma/client": "^5.22.0",
     "@types/react-color": "^3.0.12",
     "bcryptjs": "^3.0.3",
@@ -42,6 +49,7 @@
     "react-hot-toast": "^2.4.1",
     "react-image-crop": "^11.0.10",
     "recharts": "^2.10.3",
+    "ws": "^8.16.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
@@ -49,6 +57,7 @@
     "@types/node": "^25.0.8",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.5.10",
     "autoprefixer": "^10.4.23",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.3",

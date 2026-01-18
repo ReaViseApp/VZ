@@ -525,6 +525,45 @@ npx prisma generate
 
 This is the foundation layer of the Viz. platform. Contributions will be managed through pull requests focusing on specific features.
 
+## Production Deployment
+
+### Quick Deployment
+
+For detailed production deployment instructions, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+Quick setup:
+```bash
+# 1. Set up Neon database
+npm run setup:neon
+
+# 2. Run database migrations
+npm run migrate:deploy
+
+# 3. Seed production database (optional)
+npm run db:seed:production
+
+# 4. Verify deployment readiness
+npm run verify:deployment
+
+# 5. Deploy to Vercel
+vercel --prod
+```
+
+### Automated Deployments
+
+GitHub Actions workflows are configured for:
+- **Production deployment** on push to `main` branch
+- **Preview deployments** for pull requests
+
+Required GitHub secrets:
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+- `DATABASE_URL`
+- `VERCEL_DOMAIN`
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for complete setup instructions.
+
 ## License
 
 ISC
