@@ -94,7 +94,7 @@ const nextConfig = {
                 const packageName = module.context.match(
                   /[\\/]node_modules[\\/](.*?)([\\/]|$)/
                 )?.[1];
-                return `npm.${packageName?.replace('@', '')}`;
+                return `npm.${packageName?.replace('@', '').replace('/', '.')}`;
               },
             },
           },
