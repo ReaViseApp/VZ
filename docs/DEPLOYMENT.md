@@ -71,7 +71,7 @@ vercel --prod
 Once GitHub Actions is configured, deployments happen automatically:
 
 - **Push to `main`** → Production deployment
-- **Open PR** → Preview deployment
+- **Open PR** → Preview deployment (using Vercel GitHub Action)
 
 #### Required GitHub Secrets
 
@@ -81,18 +81,38 @@ Add these secrets to your GitHub repository:
 1. **VERCEL_TOKEN**
    - Get from: https://vercel.com/account/tokens
    - Create new token with appropriate scope
+   - Required for both production and preview deployments
 
 2. **VERCEL_ORG_ID**
    - Found in `.vercel/project.json` after running `vercel link`
+   - Or get from your Vercel project settings
+   - Required for both production and preview deployments
 
 3. **VERCEL_PROJECT_ID**
    - Found in `.vercel/project.json` after running `vercel link`
+   - Or get from your Vercel project settings
+   - Required for both production and preview deployments
 
 4. **DATABASE_URL**
    - Your Neon PostgreSQL connection string
+   - Required for production deployment
 
 5. **VERCEL_DOMAIN**
    - Your production domain (e.g., viz-app.vercel.app)
+   - Required for production deployment health checks
+
+#### How to Get Vercel IDs
+
+**Option 1: Using Vercel CLI**
+```bash
+vercel link
+cat .vercel/project.json
+```
+
+**Option 2: From Vercel Dashboard**
+1. Go to your project settings on Vercel
+2. Navigate to the "General" tab
+3. Find "Project ID" and "Team ID" (if using a team)
 
 ## Deployment Scripts
 

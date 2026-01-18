@@ -12,33 +12,24 @@ jobs:
     name: Deploy Preview
     runs-on: ubuntu-latest
     
+    # Required secrets configuration:
+    # - VERCEL_TOKEN: Vercel API token (get from https://vercel.com/account/tokens)
+    # - VERCEL_ORG_ID: Vercel organization/team ID (get from project settings)
+    # - VERCEL_PROJECT_ID: Vercel project ID (get from project settings)
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy Preview to Vercel
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
         id: deploy
-        run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
 
       - name: Comment Preview URL
         uses: actions/github-script@v7
@@ -48,5 +39,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🔍 Preview deployed to: ${{ steps.deploy.outputs.deployment_url }}\n\n✨ Test the changes before merging!'
+              body: '🔍 Preview deployed to: ${{ steps.deploy.outputs.preview-url }}\n\n✨ Test the changes before merging!'
             })
