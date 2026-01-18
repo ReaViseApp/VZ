@@ -11,7 +11,10 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
+    "backup": "bash scripts/backup/backup-database.sh",
+    "restore": "bash scripts/backup/restore-database.sh",
+    "health": "curl http://localhost:3000/api/health | jq"
   },
   "keywords": [
     "nextjs",
@@ -27,6 +30,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^5.22.0",
+    "@sentry/nextjs": "^7.120.4",
     "@types/react-color": "^3.0.12",
     "bcryptjs": "^3.0.3",
     "date-fns": "^3.0.6",
