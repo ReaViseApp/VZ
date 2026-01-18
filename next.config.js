@@ -64,7 +64,6 @@ const nextConfig = {
 
   // Experimental features
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['@/components', '@/lib'],
   },
 
